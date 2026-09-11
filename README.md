@@ -1,4 +1,4 @@
-# ResumeIQ — AI Resume ↔ Job Matching Engine
+# ResumeQue — AI Resume ↔ Job Matching Engine
 
 A full-stack resume analysis tool that scores your resume against job descriptions using a custom weighted matching algorithm, ATS simulation, and AI-generated insights.
 
