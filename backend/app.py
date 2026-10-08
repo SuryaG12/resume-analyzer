@@ -1,4 +1,4 @@
-"""ResumeQue API server.
+"""GradeMyResume API server.
 
 Serves the single-page frontend and exposes the analysis endpoints.
 Run:  uvicorn app:app --reload        (from the backend/ directory)
@@ -17,7 +17,7 @@ from matching_engine import match_resume_to_job
 from ats_scorer import score_ats
 from ai_insights import generate_insights
 
-app = FastAPI(title="ResumeQue API", version="1.0.0")
+app = FastAPI(title="GradeMyResume API", version="1.0.0")
 
 
 class AnalyzeRequest(BaseModel):
