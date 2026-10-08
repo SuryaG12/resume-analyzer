@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>GradeMyResume — AI Resume ↔ Job Matching</title>
+<style>
+  :root {
+    --bg: #0f1420; --card: #1a2233; --card2: #222c42;
+    --text: #e8edf5; --muted: #93a0b8; --accent: #5b8cff;
+    --good: #34d399; --warn: #fbbf24; --bad: #f87171;
+    --radius: 12px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text);
+         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+         line-height: 1.5; padding: 2rem 1rem; }
+  .wrap { max-width: 1080px; margin: 0 auto; }
+  header { text-align: center; margin-bottom: 2rem; }
+  header h1 { font-size: 2.2rem; letter-spacing: -0.5px; }
+  header h1 .q { color: var(--accent); }
+  header p { color: var(--muted); margin-top: .4rem; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem; }
+  @media (max-width: 720px) { .grid { grid-template-columns: 1fr; } }
+  .card { background: var(--card); border-radius: var(--radius); padding: 1.25rem; }
+  .card h2 { font-size: 1rem; margin-bottom: .6rem; color: var(--muted);
+             text-transform: uppercase; letter-spacing: 1px; font-size: .8rem; }
+  textarea { width: 100%; min-height: 220px; background: var(--card2); color: var(--text);
+             border: 1px solid #2e3a55; border-radius: 8px; padding: .8rem;
+             font-family: ui-monospace, monospace; font-size: .85rem; resize: vertical; }
+  textarea:focus { outline: 2px solid var(--accent); border-color: transparent; }
+  .actions { text-align: center; margin: 1.25rem 0 2rem; }
+  button { background: var(--accent); color: #fff; border: none; border-radius: 10px;
+           padding: .9rem 2.6rem; font-size: 1.05rem; font-weight: 600; cursor: pointer; }
+  button:hover { filter: brightness(1.1); }
+  button:disabled { opacity: .5; cursor: wait; }
+  #results { display: none; }
+  .score-hero { display: flex; gap: 1rem; margin-bottom: 1rem; flex-wrap: wrap; }
+  .score-box { flex: 1; min-width: 220px; text-align: center; padding: 1.5rem; }
+  .score-num { font-size: 3rem; font-weight: 800; }
+  .bar { height: 10px; background: var(--card2); border-radius: 6px; overflow: hidden; margin-top: .5rem; }
+  .bar > div { height: 100%; border-radius: 6px; transition: width .8s ease; }
+  .cat { margin: .7rem 0; }
+  .cat-head { display: flex; justify-content: space-between; font-size: .9rem; margin-bottom: .25rem; }
+  .chips { display: flex; flex-wrap: wrap; gap: .4rem; margin-top: .4rem; }
+  .chip { background: #3a2b2b; color: #fca5a5; border-radius: 20px;
+          padding: .2rem .7rem; font-size: .8rem; }
+  .chip.hit { background: #1d3529; color: #6ee7b7; }
+  ul.tips { list-style: none; }
+  ul.tips li { background: var(--card2); border-radius: 8px; padding: .7rem .9rem;
+               margin-bottom: .5rem; font-size: .92rem; }
+  ul.tips li::before { content: "💡 "; }
+  .check { display: flex; justify-content: space-between; padding: .45rem 0;
+           border-bottom: 1px solid #2a3550; font-size: .9rem; }
+  .check:last-child { border-bottom: none; }
+  .fb { color: var(--muted); font-size: .82rem; margin: .15rem 0 .4rem; }
+  .err { color: var(--bad); text-align: center; margin: 1rem 0; }
+  footer { text-align: center; color: var(--muted); font-size: .8rem; margin-top: 3rem; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Resume<span class="q">Que</span></h1>
+    <p>AI-powered resume ↔ job matching with ATS simulation</p>
+  </header>
+
+  <div class="grid">
+    <div class="card">
+      <h2>Your resume</h2>
+      <textarea id="resume" placeholder="Paste your resume text here…"></textarea>
+    </div>
+    <div class="card">
+      <h2>Job description</h2>
+      <textarea id="job" placeholder="Paste the job description here…"></textarea>
+    </div>
+  </div>
+  <div class="actions">
+    <button id="go" onclick="analyze()">Analyze match</button>
+  </div>
+  <div id="err" class="err"></div>
+
+  <div id="results">
+    <div class="score-hero">
+      <div class="card score-box">
+        <h2>Job match</h2>
+        <div class="score-num" id="matchScore">–</div>
+        <div class="bar"><div id="matchBar" style="width:0;background:var(--accent)"></div></div>
+      </div>
+      <div class="card score-box">
+        <h2>ATS score</h2>
+        <div class="score-num" id="atsScore">–</div>
+        <div class="bar"><div id="atsBar" style="width:0;background:var(--good)"></div></div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-bottom:1rem">
+      <h2>Category breakdown</h2>
+      <div id="cats"></div>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <h2>ATS checks</h2>
+        <div id="checks"></div>
+      </div>
+      <div class="card">
+        <h2>Insights</h2>
+        <ul class="tips" id="tips"></ul>
+      </div>
+    </div>
+  </div>
+
+  <footer>GradeMyResume · weighted skill matching · explainable ATS scoring</footer>
+</div>
+
+<script>
+function colorFor(v) {
+  return v >= 70 ? "var(--good)" : v >= 40 ? "var(--warn)" : "var(--bad)";
+}
+async function analyze() {
+  const resume = document.getElementById("resume").value.trim();
+  const job = document.getElementById("job").value.trim();
+  const err = document.getElementById("err");
+  err.textContent = "";
+  if (!resume || !job) { err.textContent = "Please paste both your resume and a job description."; return; }
+  const btn = document.getElementById("go");
+  btn.disabled = true; btn.textContent = "Analyzing…";
+  try {
+    const r = await fetch("/api/analyze", {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({resume_text: resume, job_text: job})
+    });
+    if (!r.ok) throw new Error("Server returned " + r.status);
+    const d = await r.json();
+    render(d);
+  } catch (e) {
+    err.textContent = "Analysis failed: " + e.message;
+  } finally {
+    btn.disabled = false; btn.textContent = "Analyze match";
+  }
+}
+function render(d) {
+  document.getElementById("results").style.display = "block";
+  const m = d.match, a = d.ats;
+  const ms = document.getElementById("matchScore");
+  ms.textContent = m.overall_score + "%";
+  ms.style.color = colorFor(m.overall_score);
+  document.getElementById("matchBar").style.width = m.overall_score + "%";
+  document.getElementById("matchBar").style.background = colorFor(m.overall_score);
+  const as = document.getElementById("atsScore");
+  as.textContent = a.total + "%";
+  as.style.color = colorFor(a.total);
+  document.getElementById("atsBar").style.width = a.total + "%";
+  document.getElementById("atsBar").style.background = colorFor(a.total);
+
+  document.getElementById("cats").innerHTML = m.categories.map(c => {
+    if (c.score === null) return `<div class="cat"><div class="cat-head"><span>${c.category}</span><span style="color:var(--muted)">n/a</span></div></div>`;
+    const chips = c.matched_skills.map(s => `<span class="chip hit">${s}</span>`).join("")
+                + c.missing_skills.map(s => `<span class="chip">${s} ✕</span>`).join("");
+    return `<div class="cat">
+      <div class="cat-head"><span>${c.category}</span><span>${c.score}%</span></div>
+      <div class="bar"><div style="width:${c.score}%;background:${colorFor(c.score)}"></div></div>
+      <div class="chips">${chips}</div></div>`;
+  }).join("");
+
+  document.getElementById("checks").innerHTML = a.checks.map(c =>
+    `<div class="check"><span>${c.name}</span><b>${c.points}/${c.max_points}</b></div>` +
+    c.feedback.map(f => `<div class="fb">↳ ${f}</div>`).join("")
+  ).join("");
+
+  document.getElementById("tips").innerHTML =
+    d.insights.map(t => `<li>${t}</li>`).join("");
+  document.getElementById("results").scrollIntoView({behavior: "smooth"});
+}
+</script>
+</body>
+</html>
