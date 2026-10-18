@@ -1,4 +1,4 @@
-# GradeMyResume — AI Resume ↔ Job Matching Engine
+# ATSight — AI Resume ↔ Job Matching Engine
 
 A resume analysis tool that scores your resume against job descriptions using a
 custom weighted matching algorithm, ATS simulation, and AI-generated insights.
