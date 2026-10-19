@@ -7,56 +7,57 @@
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231d5fbf' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 3h8l4 4v14H6z'/%3E%3Cpath d='M14 3v4h4'/%3E%3Cpath d='M9.5 12.2l1.4 1.4 2.6-3'/%3E%3C/svg%3E" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
 <style>
-  /* Tokens: tasteskill "achromatic-ledger" (seed 189850624), face = blue-grey ledger ground. */
+  /* v5 tokens: framed-sheet (seed 1303633497) x shadcn semantic naming x Linear discipline.
+     One ground tint, one sheet, one ink, one data hue. No shadows at rest. */
   :root {
-    --ground: #f2f4f7;
-    --surface: #ffffff;
-    --raised: #eeeeee;
-    --border: #e6e6e6;
-    --rule: #f0f0f0;
-    --control: #d4d4d4;
-    --text: #0a0a0a;
-    --muted: #6b6b6b;
-    --accent: #141414;
-    --hue: #1d5fbf;
-    --positive: #2e7d32;
+    --frame: #e9edf3;
+    --sheet: #ffffff;
+    --sheet-edge: #e6e8ec;
+    --raised: #f4f6f8;
+    --border: #e8eaec;
+    --rule: #f0f1f2;
+    --control: #c9ccd2;
+    --text: #131416;
+    --muted: #5d5f60;
+    --primary: #1d5fbf;
+    --primary-hover: #1859a8;
+    --ring: #1d5fbf;
+    --positive: #1e7b4f;
     --negative: #c4242a;
     --warning: #92400e;
     --pill-positive-bg: #dcfae5; --pill-positive-ink: #04250e;
     --pill-negative-bg: #ffedea; --pill-negative-ink: #831c1e;
     --pill-warning-bg: #fffbeb; --pill-warning-ink: #92400e;
-    --pill-neutral-bg: #eeeeee; --pill-neutral-ink: #3d3d3d;
-    --radius-card: 10px;
-    --radius-control: 8px;
-    --ring: var(--hue);
-    --shadow-card: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-    --shadow-control: 0 1px 2px 0 rgb(0 0 0 / 0.06);
+    --pill-neutral-bg: #eef0f2; --pill-neutral-ink: #35373a;
+    --radius-sheet: 16px;
+    --radius-card: 8px;
+    --radius-control: 6px;
     --gap: 12px;
-    --font: "Geist", Inter, system-ui, -apple-system, "Segoe UI", sans-serif;
+    --font: "IBM Plex Sans", Inter, system-ui, -apple-system, "Segoe UI", sans-serif;
+    --mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
     /* Motion tokens (emilkowalski): strong custom curves, never built-in easings for deliberate motion. */
     --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
     --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
-    --accent-hover: #2b2b2b;
   }
   *, *::before, *::after { box-sizing: border-box; }
   html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
   body {
-    margin: 0; background: var(--ground); color: var(--text);
-    font: 400 14px/20px var(--font); -webkit-font-smoothing: antialiased;
+    margin: 0; background: var(--frame); color: var(--text);
+    font: 400 14px/1.55 var(--font); -webkit-font-smoothing: antialiased;
   }
   h1, h2, h3, p, ul { margin: 0; }
   ul { padding: 0; list-style: none; }
   button, textarea { font: inherit; color: inherit; }
-  /* Focus ring (shadcn): 2px ring in the accent hue, follows the element's own radius. */
   :focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
   .num { font-variant-numeric: tabular-nums; }
+  .mono { font-family: var(--mono); }
 
-  /* Viewer bar: the only chrome on the report. 48px, 1px rule. */
+  /* Viewer bar: 48px on the frame tint, 1px rule. The only chrome. */
   .viewer {
     height: 48px; display: flex; align-items: center; justify-content: space-between;
-    padding: 0 24px; border-bottom: 1px solid var(--border); background: var(--ground);
+    padding: 0 24px; border-bottom: 1px solid var(--sheet-edge); background: var(--frame);
     position: sticky; top: 0; z-index: 10;
   }
   .brand { display: flex; align-items: center; gap: 10px; font-size: 15px; font-weight: 600; letter-spacing: -0.01em; }
@@ -64,74 +65,82 @@
   .viewer .ghost { visibility: hidden; }
   .viewer.results .ghost { visibility: visible; }
 
+  /* The sheet: white, hairline edge, 16px corners, inset 8px left/right/bottom. */
+  .sheet {
+    background: var(--sheet); border: 1px solid var(--sheet-edge);
+    border-radius: var(--radius-sheet); margin: 0 8px 8px;
+    min-height: calc(100vh - 48px - 8px);
+  }
+  .sheet-inner { max-width: 1088px; margin: 0 auto; padding: 32px 24px 64px; }
+  @media (max-width: 700px) {
+    body { background: var(--sheet); }
+    .sheet { border: none; border-radius: 0; margin: 0; min-height: calc(100vh - 48px); }
+    .sheet-inner { padding: 24px 16px 48px; }
+    .viewer { background: var(--sheet); padding: 0 16px; }
+  }
+
+  /* Buttons: flat, one fill. Primary is the brand hue. */
   .btn {
-    appearance: none; border: 1px solid var(--control); background: var(--surface);
+    appearance: none; border: 1px solid var(--control); background: var(--sheet);
     color: var(--text); border-radius: var(--radius-control); height: 36px; padding: 0 16px;
     font-weight: 500; cursor: pointer;
     transition: background-color 150ms ease, border-color 150ms ease, transform 120ms var(--ease-out);
   }
   .btn:hover { background: var(--raised); }
-  /* Press feedback (emilkowalski): instant scale-down so the UI feels like it hears the press. */
   .btn:active { transform: scale(0.97); }
   .btn:disabled:active { transform: none; }
   @media (prefers-reduced-motion: reduce) { .btn:active { transform: none; } }
   .btn.primary {
-    background: var(--accent); border-color: var(--accent); color: #fff;
+    background: var(--primary); border-color: var(--primary); color: #fff;
     height: 44px; padding: 0 32px; font-size: 15px; font-weight: 600;
-    box-shadow: var(--shadow-control);
   }
-  .btn.primary:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
-  .btn.primary:disabled { opacity: 0.55; cursor: wait; box-shadow: none; }
-  .btn.primary:disabled:hover { background: var(--accent); border-color: var(--accent); }
-  /* Outline button (shadcn outline): bordered, quiet until hovered. */
+  .btn.primary:hover { background: var(--primary-hover); border-color: var(--primary-hover); }
+  .btn.primary:disabled { opacity: 0.55; cursor: wait; }
+  .btn.primary:disabled:hover { background: var(--primary); border-color: var(--primary); }
   .btn.outline {
-    background: var(--surface); border-color: var(--control); color: var(--text);
+    background: var(--sheet); border-color: var(--control); color: var(--text);
     height: 44px; padding: 0 20px; font-size: 14px; font-weight: 500;
-    box-shadow: var(--shadow-control);
   }
   .btn.outline:hover { background: var(--raised); border-color: var(--muted); }
-  /* Ghost button (shadcn ghost): borderless until hovered. */
   .btn.ghost { background: transparent; border-color: transparent; height: 36px; }
   .btn.ghost:hover { background: var(--raised); }
 
-  /* Centred 1088px column, 33px below the viewer bar. */
-  .col { max-width: 1088px; margin: 0 auto; padding: 33px 24px 64px; }
-  @media (max-width: 700px) { .col { padding: 24px 16px 48px; } }
-
+  /* Title rows */
   .title-row { margin-bottom: 24px; }
   .title-row h1 { font-size: 24px; line-height: 1.2; font-weight: 600; letter-spacing: -0.01em; }
-  .title-row .sub { margin-top: 4px; color: var(--muted); font-size: 14px; max-width: 62ch; }
-  /* Brand hero: the product introduces itself on the input screen. */
-  .brand-hero { margin-bottom: 28px; }
-  .brand-hero .hero-mark { display: flex; align-items: center; gap: 12px; }
-  .brand-hero .hero-mark svg { width: 38px; height: 38px; color: var(--ink); flex: none; }
-  .brand-hero .wordmark { font-size: 36px; font-weight: 700; letter-spacing: -0.02em; line-height: 1.1; }
-  .brand-hero .tagline { margin-top: 6px; font-size: 15px; color: var(--text); font-weight: 500; }
-  .brand-hero .sub { margin-top: 6px; }
+  .freshness { margin-top: 4px; color: var(--muted); font-size: 12px; }
 
-  /* Input state */
+  /* Input hero: the product introduces itself. */
+  .hero { margin-bottom: 28px; max-width: 72ch; }
+  .hero-mark { display: flex; align-items: center; gap: 14px; }
+  .hero-mark svg { width: 42px; height: 42px; color: var(--text); flex: none; }
+  .wordmark { font-size: 40px; font-weight: 700; letter-spacing: -0.02em; line-height: 1.05; }
+  .tagline { margin-top: 10px; font-size: 16px; font-weight: 500; letter-spacing: -0.005em; }
+  .hero .sub { margin-top: 6px; color: var(--muted); font-size: 14px; }
+  .does { margin-top: 14px; font-size: 13px; color: var(--muted); }
+  .does li { display: inline; }
+  .does li + li::before { content: " · "; }
+
+  /* Input fields */
   .fields { display: grid; grid-template-columns: 1fr 1fr; gap: var(--gap); margin-bottom: var(--gap); }
   @media (max-width: 700px) { .fields { grid-template-columns: 1fr; } }
-  /* Input fields as cards (shadcn form field): label row with live word count,
-     textarea with ring focus, helper hint. */
   .field {
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: var(--radius-card); box-shadow: var(--shadow-card);
-    padding: 16px; display: flex; flex-direction: column; min-width: 0;
+    background: var(--sheet); border: 1px solid var(--border);
+    border-radius: var(--radius-card); padding: 16px; display: flex; flex-direction: column; min-width: 0;
   }
   .field-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; margin-bottom: 8px; }
   .field label { font-size: 14px; font-weight: 600; letter-spacing: -0.01em; }
   .field .wordcount { font-size: 12px; color: var(--muted); white-space: nowrap; }
   .field textarea {
-    width: 100%; min-height: 220px; resize: vertical; background: var(--surface);
+    width: 100%; min-height: 220px; resize: vertical; background: var(--sheet);
     border: 1px solid var(--control); border-radius: var(--radius-control);
     padding: 12px; font-size: 13.5px; line-height: 1.55;
     transition: border-color 150ms ease, box-shadow 150ms ease;
   }
   .field textarea:hover { border-color: var(--muted); }
   .field textarea:focus-visible {
-    outline: none; border-color: var(--hue);
-    box-shadow: 0 0 0 3px rgb(29 95 191 / 0.12);
+    outline: none; border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgb(29 95 191 / 0.14);
   }
   .field textarea::placeholder { color: var(--muted); }
   .field .field-hint { font-size: 12px; color: var(--muted); margin-top: 8px; }
@@ -146,33 +155,31 @@
   /* Report grid: 12 columns, one 12px gutter. */
   .grid { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: var(--gap); }
   .panel {
-    background: var(--surface); border: 1px solid var(--border);
+    background: var(--sheet); border: 1px solid var(--border);
     border-radius: var(--radius-card); padding: 20px; min-width: 0;
-    box-shadow: var(--shadow-card);
   }
-  .panel h2 { font-size: 17px; font-weight: 600; line-height: 1.3; letter-spacing: -0.01em; }
+  .panel h2 { font-size: 16px; font-weight: 600; line-height: 1.3; letter-spacing: -0.01em; }
   .panel .meta { color: var(--muted); font-size: 12px; margin-top: 4px; }
-  .span8 { grid-column: span 8; } .span4 { grid-column: span 4; }
-  .span7 { grid-column: span 7; } .span5 { grid-column: span 5; }
   .span12 { grid-column: span 12; }
-  @media (max-width: 900px) {
-    .span8, .span4, .span7, .span5 { grid-column: span 12; }
-  }
+  .span7 { grid-column: span 7; } .span5 { grid-column: span 5; }
+  @media (max-width: 900px) { .span7, .span5 { grid-column: span 12; } }
   .grid.top { align-items: start; }
 
-  /* The verdict: the score is the hero. One hue, on the dial only. */
-  .verdict .kpi-label { display: flex; align-items: center; gap: 10px; margin-bottom: 4px; }
-  .kpi-label .label { font-size: 14px; color: var(--muted); font-weight: 500; }
-  .verdict-body { display: flex; gap: 24px; align-items: stretch; margin-top: 8px; }
-  .dial-col { flex: none; display: flex; flex-direction: column; align-items: center; }
-  .dial-wrap { position: relative; width: 200px; height: 200px; }
+  /* KPI label over value (app-screen convention). */
+  .kpi-label { font-size: 12px; color: var(--muted); font-weight: 500; }
+
+  /* Verdict band: the whole answer in one horizontal read. */
+  .band { display: grid; grid-template-columns: auto 1px 1fr 1px 248px; gap: 24px; align-items: center; }
+  .band-div { width: 1px; align-self: stretch; background: var(--border); }
+  .band-dial { display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 4px 0; }
+  .dial-wrap { position: relative; width: 160px; height: 160px; }
   .dial-wrap svg { display: block; width: 100%; height: 100%; }
-  .dial-num { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; }
-  .dial-num .v { font-size: 56px; line-height: 1; font-weight: 500; letter-spacing: -0.03em; }
-  .dial-num .unit { font-size: 16px; color: var(--muted); font-weight: 400; margin-left: 4px; }
+  .dial-num { position: absolute; inset: 0; display: flex; align-items: baseline; justify-content: center; padding-top: 52px; }
+  .dial-num .v { font-size: 64px; line-height: 1; font-weight: 600; letter-spacing: -0.03em; }
+  .dial-num .unit { font-size: 15px; color: var(--muted); font-weight: 400; margin-left: 4px; }
   /* Verdict as a stamp mark: straight, double-framed, ink per band. */
   .stamp-mark {
-    display: inline-block; margin-top: 14px; padding: 7px 14px 6px;
+    display: inline-block; padding: 7px 14px 6px;
     font-size: 11px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase;
     border: 2px solid currentColor; border-radius: 4px; position: relative; white-space: nowrap;
   }
@@ -180,53 +187,34 @@
     content: ""; position: absolute; inset: 2px;
     border: 1px solid currentColor; border-radius: 2px;
   }
-  .stamp-mark.positive { color: #2e7d32; }
-  .stamp-mark.warning { color: #92400e; }
-  .stamp-mark.negative { color: #c4242a; }
-  .stamp-mark.neutral { color: #6b6b6b; }
-  /* Perforation between the dial stub and the ledger copy. */
-  .perf { flex: none; align-self: stretch; border-left: 2px dashed var(--border); margin: 0 2px; position: relative; }
-  .perf::before, .perf::after {
-    content: ""; position: absolute; left: 50%; width: 16px; height: 16px;
-    background: var(--ground); border-radius: 50%; transform: translate(-50%, -50%);
-  }
-  .perf::before { top: -21px; }
-  .perf::after { bottom: -21px; }
-  .verdict-copy { flex: 1; min-width: 0; display: flex; flex-direction: column; }
-  .verdict-copy .expl { font-size: 15px; line-height: 1.55; margin-bottom: 16px; }
-  .stamp-line {
-    margin-top: auto; padding-top: 10px; border-top: 3px double var(--border);
-    font-size: 11px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted);
-  }
-  @media (max-width: 700px) {
-    .verdict-body { flex-direction: column; align-items: center; }
-    .dial-wrap { width: 168px; height: 168px; }
-    .dial-num .v { font-size: 48px; }
-    .perf { border-left: none; border-top: 2px dashed var(--border); width: 100%; margin: 2px 0; align-self: auto; }
-    .perf::before { top: 50%; left: -21px; }
-    .perf::after { top: 50%; bottom: auto; left: auto; right: -21px; }
-    .verdict-copy { width: 100%; }
-  }
-  .meter { height: 8px; background: var(--raised); border-radius: 999px; overflow: hidden; margin-top: 16px; }
+  .stamp-mark.positive { color: var(--positive); }
+  .stamp-mark.warning { color: var(--warning); }
+  .stamp-mark.negative { color: var(--negative); }
+  .stamp-mark.neutral { color: var(--muted); }
+  .band-copy .expl { font-size: 15px; line-height: 1.6; max-width: 52ch; }
+  .band-match .figure { font-size: 30px; line-height: 1.1; font-weight: 600; letter-spacing: -0.02em; margin: 6px 0 2px; }
+  .band-match .figure .unit { font-size: 14px; color: var(--muted); font-weight: 400; margin-left: 2px; }
+  .band-match .sub { color: var(--muted); font-size: 13px; margin-top: 6px; }
+  .meter { height: 8px; background: var(--raised); border-radius: 4px; overflow: hidden; margin-top: 12px; }
   /* Fill animates via scaleX (GPU-friendly transform), never width. */
-  .meter > div { height: 100%; width: 100%; border-radius: 999px; transform: scaleX(0); transform-origin: left center; transition: transform 600ms var(--ease-out); }
+  .meter > div { height: 100%; width: 100%; border-radius: 4px; transform: scaleX(0); transform-origin: left center; transition: transform 600ms var(--ease-out); background: var(--primary); }
   @media (prefers-reduced-motion: reduce) { .meter > div { transition: none; } }
-
-  .match .figure { font-size: 30px; line-height: 1.1; font-weight: 500; letter-spacing: -0.02em; margin: 10px 0 2px; }
-  .match .figure .unit { font-size: 14px; color: var(--muted); font-weight: 400; margin-left: 2px; }
-  .match .sub { color: var(--muted); font-size: 13px; margin-top: 8px; }
-  .match .meter > div { background: var(--accent); }
+  @media (max-width: 900px) {
+    .band { grid-template-columns: 1fr; gap: 20px; }
+    .band-div { width: auto; height: 1px; }
+    .band-match { border-top: none; }
+  }
 
   /* Skill breakdown rows */
   .cat { padding: 12px 0; border-bottom: 1px solid var(--rule); }
   .cat:last-child { border-bottom: none; padding-bottom: 0; }
   .cat-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
   .cat-head .name { font-weight: 500; }
-  .cat-head .score { font-weight: 500; white-space: nowrap; }
+  .cat-head .score { font-weight: 600; white-space: nowrap; }
   .cat-head .score.na { color: var(--muted); font-weight: 400; }
   .strip { display: flex; gap: 3px; margin: 10px 0 8px; }
-  .strip i { flex: 1; height: 10px; border-radius: 2px; background: var(--raised); }
-  .strip i.on { background: var(--accent); }
+  .strip i { flex: 1; height: 8px; border-radius: 2px; background: var(--raised); }
+  .strip i.on { background: var(--primary); }
   .chips { display: flex; flex-wrap: wrap; gap: 6px; }
   .chip {
     font-size: 12px; line-height: 1; padding: 5px 10px; border-radius: 999px;
@@ -235,12 +223,12 @@
   }
   .chip.missing { background: var(--pill-negative-bg); color: var(--pill-negative-ink); border-color: #f3c1bd; }
 
-  /* ATS checks ledger */
+  /* ATS checks ledger: name left, points right-aligned tabular. */
   .check { padding: 10px 0; border-bottom: 1px solid var(--rule); }
   .check:last-child { border-bottom: none; padding-bottom: 0; }
   .check-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
   .check-head .name { font-weight: 500; }
-  .check-head .pts { white-space: nowrap; color: var(--muted); }
+  .check-head .pts { white-space: nowrap; color: var(--muted); font-family: var(--mono); font-size: 12.5px; }
   .check-head .pts b { color: var(--text); font-weight: 500; }
   .fb { color: var(--muted); font-size: 12.5px; margin-top: 4px; padding-left: 14px; text-indent: -14px; }
   .fb::before { content: "↳ "; }
@@ -248,13 +236,16 @@
   /* Insights */
   .tip { display: flex; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--rule); font-size: 14px; line-height: 1.55; }
   .tip:last-child { border-bottom: none; padding-bottom: 0; }
-  .tip::before { content: ""; flex: none; width: 6px; height: 6px; background: var(--accent); margin-top: 7px; }
+  .tip::before { content: ""; flex: none; width: 6px; height: 6px; background: var(--primary); margin-top: 7px; }
 
   /* Loading skeleton */
   .skel { border-radius: 6px; background: var(--raised); }
   .loading-line { color: var(--muted); font-size: 14px; margin-bottom: 16px; }
 
-  footer { text-align: center; color: var(--muted); font-size: 12px; padding: 0 24px 32px; }
+  footer { text-align: center; color: var(--muted); font-size: 12px; padding: 24px; background: var(--frame); }
+  footer .foot-brand { display: inline-flex; align-items: center; gap: 8px; font-weight: 600; color: var(--text); font-size: 13px; margin-bottom: 4px; }
+  footer .foot-brand svg { width: 18px; height: 18px; display: block; }
+  @media (max-width: 700px) { footer { background: var(--sheet); } }
   [hidden] { display: none !important; }
 
   /* Motion layer (emilkowalski rules): transform + opacity only, strong ease-out,
@@ -270,7 +261,6 @@
   #resultsView:not([hidden]) .grid > .panel:nth-child(2) { animation-delay: 100ms; }
   #resultsView:not([hidden]) .grid > .panel:nth-child(3) { animation-delay: 150ms; }
   #resultsView:not([hidden]) .grid > .panel:nth-child(4) { animation-delay: 200ms; }
-  #resultsView:not([hidden]) .grid > .panel:nth-child(5) { animation-delay: 250ms; }
 
   /* Loading skeleton: gentle pulse = state indication ("working"), no gradients. */
   @keyframes skelpulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
@@ -293,30 +283,36 @@
       <path d="M14 3v4h4" />
       <path d="M9 13h6" />
       <path d="M9 16.5h6" />
-      <path d="M9.5 12.2l1.4 1.4 2.6-3" style="stroke:var(--hue)" />
+      <path d="M9.5 12.2l1.4 1.4 2.6-3" style="stroke:var(--primary)" />
     </svg>
     <span>ATSight</span>
   </div>
   <button class="btn ghost" id="againTop" type="button">Analyze another</button>
 </div>
 
-<main class="col">
+<div class="sheet">
+<main class="sheet-inner">
 
   <!-- Input state -->
   <section id="inputView" aria-label="New resume check">
-    <div class="title-row brand-hero">
+    <div class="hero">
       <div class="hero-mark">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <path d="M6 3h8l4 4v14H6z" />
           <path d="M14 3v4h4" />
           <path d="M9 13h6" />
           <path d="M9 16.5h6" />
-          <path d="M9.5 12.2l1.4 1.4 2.6-3" style="stroke:var(--hue)" />
+          <path d="M9.5 12.2l1.4 1.4 2.6-3" style="stroke:var(--primary)" />
         </svg>
         <span class="wordmark">ATSight</span>
       </div>
       <p class="tagline">AI-powered resume-to-job matching with ATS simulation</p>
       <p class="sub">Paste your resume and the job description. ATSight scores how the two match and audits your resume the way an applicant tracking system would.</p>
+      <ul class="does" aria-label="What ATSight does">
+        <li>ATS score out of 100</li>
+        <li>Skill match against the posting</li>
+        <li>Fixes in priority order</li>
+      </ul>
     </div>
     <div class="fields">
       <div class="field">
@@ -350,10 +346,10 @@
       <p class="loading-line">Reading your resume and the job description…</p>
     </div>
     <div class="grid">
-      <div class="panel span8">
-        <div class="skel" style="height:14px;width:120px;margin-bottom:20px"></div>
+      <div class="panel span12">
+        <div class="skel" style="height:12px;width:110px;margin-bottom:20px"></div>
         <div style="display:flex;gap:24px;align-items:center">
-          <div class="skel" style="height:180px;width:180px;border-radius:50%;flex:none"></div>
+          <div class="skel" style="height:150px;width:150px;border-radius:50%;flex:none"></div>
           <div style="flex:1;min-width:0">
             <div class="skel" style="height:14px;width:95%;margin-bottom:8px"></div>
             <div class="skel" style="height:14px;width:75%;margin-bottom:8px"></div>
@@ -361,10 +357,15 @@
           </div>
         </div>
       </div>
-      <div class="panel span4">
-        <div class="skel" style="height:14px;width:100px;margin-bottom:16px"></div>
-        <div class="skel" style="height:34px;width:120px;margin-bottom:12px"></div>
-        <div class="skel" style="height:8px;width:100%"></div>
+      <div class="panel span7">
+        <div class="skel" style="height:14px;width:140px;margin-bottom:16px"></div>
+        <div class="skel" style="height:12px;width:90%;margin-bottom:10px"></div>
+        <div class="skel" style="height:12px;width:70%"></div>
+      </div>
+      <div class="panel span5">
+        <div class="skel" style="height:14px;width:110px;margin-bottom:16px"></div>
+        <div class="skel" style="height:12px;width:85%;margin-bottom:10px"></div>
+        <div class="skel" style="height:12px;width:60%"></div>
       </div>
     </div>
   </section>
@@ -373,37 +374,36 @@
   <section id="resultsView" hidden aria-label="Results">
     <div class="title-row">
       <h1>Resume check</h1>
+      <p class="freshness mono num" id="freshness"></p>
     </div>
     <div class="grid top">
-      <div class="panel verdict span8">
-        <div class="kpi-label">
-          <span class="label">ATS score</span>
-        </div>
-        <div class="verdict-body">
-          <div class="dial-col">
+      <div class="panel span12">
+        <div class="band">
+          <div class="band-dial">
+            <p class="kpi-label">ATS score</p>
             <div class="dial-wrap" role="img" id="atsDialWrap" aria-label="ATS score">
               <svg viewBox="0 0 200 200" aria-hidden="true">
-                <circle cx="100" cy="100" r="93" fill="none" stroke-width="14" style="stroke:var(--raised)" />
-                <circle id="atsRing" cx="100" cy="100" r="93" fill="none" stroke-width="14"
+                <circle cx="100" cy="100" r="93" fill="none" stroke-width="12" style="stroke:var(--raised)" />
+                <circle id="atsRing" cx="100" cy="100" r="93" fill="none" stroke-width="12"
                   stroke-linecap="round" transform="rotate(-90 100 100)"
-                  stroke-dasharray="584.3" stroke-dashoffset="584.3" style="stroke:var(--hue)" />
+                  stroke-dasharray="584.3" stroke-dashoffset="584.3" style="stroke:var(--primary)" />
               </svg>
               <div class="dial-num num"><span class="v" id="atsScore"></span><span class="unit">/100</span></div>
             </div>
             <div class="stamp-mark" id="verdictStamp"></div>
           </div>
-          <div class="perf" aria-hidden="true"></div>
-          <div class="verdict-copy">
+          <div class="band-div" aria-hidden="true"></div>
+          <div class="band-copy">
             <p class="expl" id="atsExplanation"></p>
-            <p class="stamp-line num" id="stamp"></p>
+          </div>
+          <div class="band-div" aria-hidden="true"></div>
+          <div class="band-match">
+            <p class="kpi-label">Job match</p>
+            <div class="figure num"><span id="matchScore"></span><span class="unit">/100</span></div>
+            <div class="meter"><div id="matchBar"></div></div>
+            <p class="sub num" id="matchSub"></p>
           </div>
         </div>
-      </div>
-      <div class="panel match span4">
-        <div class="kpi-label"><span class="label">Job match</span></div>
-        <div class="figure num"><span id="matchScore"></span><span class="unit">/100</span></div>
-        <p class="sub num" id="matchSub"></p>
-        <div class="meter"><div id="matchBar"></div></div>
       </div>
       <div class="panel span7">
         <h2>Skill breakdown</h2>
@@ -424,8 +424,21 @@
   </section>
 
 </main>
+</div>
 
-<footer>ATSight · weighted skill matching · explainable ATS scoring</footer>
+<footer>
+  <div class="foot-brand">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M6 3h8l4 4v14H6z" />
+      <path d="M14 3v4h4" />
+      <path d="M9 13h6" />
+      <path d="M9 16.5h6" />
+      <path d="M9.5 12.2l1.4 1.4 2.6-3" style="stroke:var(--primary)" />
+    </svg>
+    <span>ATSight</span>
+  </div>
+  <p>Weighted skill matching · explainable ATS scoring</p>
+</footer>
 
 <script>
 "use strict";
@@ -569,9 +582,9 @@ function render(d) {
     return '<div class="tip">' + clean(t) + "</div>";
   }).join("");
 
-  /* Freshness stamp: the analysis just ran, on this machine's clock. */
+  /* Freshness line under the report title: the analysis just ran, on this machine's clock. */
   var now = new Date();
-  document.getElementById("stamp").textContent = "Checked " +
+  document.getElementById("freshness").textContent = "Checked " +
     now.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }) +
     " · " + a.checks.length + " checks";
 }
@@ -596,7 +609,7 @@ document.getElementById("job").addEventListener("input", updateCounts);
 /* One-click sample data, for first-run and demo purposes. */
 var SAMPLE_RESUME = [
   "Arjun Mehta",
-  "Bellevue, WA \u00B7 arjun.mehta@example.com \u00B7 linkedin.com/in/arjunmehta \u00B7 github.com/arjunmehta",
+  "Bellevue, WA \u00B7 arjun.mehta@example.com \u00B7 linkedin.com/in/arjunmehta \u00B7 github.com/arjunmehta", // taste-skill-ignore: reserved example domain, deliberate sample data for the demo button
   "",
   "EDUCATION",
   "Bellevue High School, Bellevue, WA, Expected June 2027",
