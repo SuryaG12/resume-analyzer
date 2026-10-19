@@ -5,7 +5,7 @@ custom weighted matching algorithm, ATS simulation, and AI-generated insights.
 
 ![License](https://img.shields.io/badge/license-MIT-blue)
 ![Status](https://img.shields.io/badge/status-working-green)
-![Tests](https://img.shields.io/badge/tests-11%20passing-green)
+![Tests](https://img.shields.io/badge/tests-12%20passing-green)
 
 ## 🎯 What It Does
 
@@ -30,7 +30,7 @@ custom weighted matching algorithm, ATS simulation, and AI-generated insights.
 - **Backend:** Python 3.9+, FastAPI
 - **Frontend:** Single-page app (HTML/CSS/vanilla JS), served by the backend — no build step
 - **AI Layer:** Rule-based insights, optional Claude API enhancement
-- **Testing:** pytest (11 tests)
+- **Testing:** pytest (12 tests)
 
 ## 📦 Project Structure
 
@@ -93,7 +93,7 @@ Set `ANTHROPIC_API_KEY` to have Claude enhance the rule-based insights.
 Without it, everything still works — the rule-based engine covers it.
 
 ```bash
-export ANTHROPIC_API_KEY=sk-ant-...
+export ANTHROPIC_API_KEY=<your-key-here>
 python app.py
 ```
 
