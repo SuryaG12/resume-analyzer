@@ -3,180 +3,472 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>ATSight — AI Resume ↔ Job Matching</title>
+<title>ATSight: resume check</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet" />
 <style>
+  /* Tokens: tasteskill "achromatic-ledger" (seed 189850624), face = blue-grey ledger ground. */
   :root {
-    --bg: #0f1420; --card: #1a2233; --card2: #222c42;
-    --text: #e8edf5; --muted: #93a0b8; --accent: #5b8cff;
-    --good: #34d399; --warn: #fbbf24; --bad: #f87171;
-    --radius: 12px;
+    --ground: #f2f4f7;
+    --surface: #ffffff;
+    --raised: #eeeeee;
+    --border: #e6e6e6;
+    --rule: #f0f0f0;
+    --control: #d4d4d4;
+    --text: #0a0a0a;
+    --muted: #6b6b6b;
+    --accent: #141414;
+    --hue: #1d5fbf;
+    --positive: #2e7d32;
+    --negative: #c4242a;
+    --warning: #92400e;
+    --pill-positive-bg: #dcfae5; --pill-positive-ink: #04250e;
+    --pill-negative-bg: #ffedea; --pill-negative-ink: #831c1e;
+    --pill-warning-bg: #fffbeb; --pill-warning-ink: #92400e;
+    --pill-neutral-bg: #eeeeee; --pill-neutral-ink: #3d3d3d;
+    --radius-card: 8px;
+    --radius-control: 6px;
+    --gap: 12px;
+    --font: "Geist", Inter, system-ui, -apple-system, "Segoe UI", sans-serif;
   }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { background: var(--bg); color: var(--text);
-         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-         line-height: 1.5; padding: 2rem 1rem; }
-  .wrap { max-width: 1080px; margin: 0 auto; }
-  header { text-align: center; margin-bottom: 2rem; }
-  header h1 { font-size: 2.2rem; letter-spacing: -0.5px; }
-  header h1 .q { color: var(--accent); }
-  header p { color: var(--muted); margin-top: .4rem; }
-  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem; }
-  @media (max-width: 720px) { .grid { grid-template-columns: 1fr; } }
-  .card { background: var(--card); border-radius: var(--radius); padding: 1.25rem; }
-  .card h2 { font-size: 1rem; margin-bottom: .6rem; color: var(--muted);
-             text-transform: uppercase; letter-spacing: 1px; font-size: .8rem; }
-  textarea { width: 100%; min-height: 220px; background: var(--card2); color: var(--text);
-             border: 1px solid #2e3a55; border-radius: 8px; padding: .8rem;
-             font-family: ui-monospace, monospace; font-size: .85rem; resize: vertical; }
-  textarea:focus { outline: 2px solid var(--accent); border-color: transparent; }
-  .actions { text-align: center; margin: 1.25rem 0 2rem; }
-  button { background: var(--accent); color: #fff; border: none; border-radius: 10px;
-           padding: .9rem 2.6rem; font-size: 1.05rem; font-weight: 600; cursor: pointer; }
-  button:hover { filter: brightness(1.1); }
-  button:disabled { opacity: .5; cursor: wait; }
-  #results { display: none; }
-  .score-hero { display: flex; gap: 1rem; margin-bottom: 1rem; flex-wrap: wrap; }
-  .score-box { flex: 1; min-width: 220px; text-align: center; padding: 1.5rem; }
-  .score-num { font-size: 3rem; font-weight: 800; }
-  .bar { height: 10px; background: var(--card2); border-radius: 6px; overflow: hidden; margin-top: .5rem; }
-  .bar > div { height: 100%; border-radius: 6px; transition: width .8s ease; }
-  .cat { margin: .7rem 0; }
-  .cat-head { display: flex; justify-content: space-between; font-size: .9rem; margin-bottom: .25rem; }
-  .chips { display: flex; flex-wrap: wrap; gap: .4rem; margin-top: .4rem; }
-  .chip { background: #3a2b2b; color: #fca5a5; border-radius: 20px;
-          padding: .2rem .7rem; font-size: .8rem; }
-  .chip.hit { background: #1d3529; color: #6ee7b7; }
-  ul.tips { list-style: none; }
-  ul.tips li { background: var(--card2); border-radius: 8px; padding: .7rem .9rem;
-               margin-bottom: .5rem; font-size: .92rem; }
-  ul.tips li::before { content: "💡 "; }
-  .check { display: flex; justify-content: space-between; padding: .45rem 0;
-           border-bottom: 1px solid #2a3550; font-size: .9rem; }
-  .check:last-child { border-bottom: none; }
-  .fb { color: var(--muted); font-size: .82rem; margin: .15rem 0 .4rem; }
-  .expl { color: var(--muted); font-size: .92rem; line-height: 1.55; margin: .6rem 0 0; }
-  .err { color: var(--bad); text-align: center; margin: 1rem 0; }
-  footer { text-align: center; color: var(--muted); font-size: .8rem; margin-top: 3rem; }
+  *, *::before, *::after { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+  body {
+    margin: 0; background: var(--ground); color: var(--text);
+    font: 400 14px/20px var(--font); -webkit-font-smoothing: antialiased;
+  }
+  h1, h2, h3, p, ul { margin: 0; }
+  ul { padding: 0; list-style: none; }
+  button, textarea { font: inherit; color: inherit; }
+  :focus-visible { outline: 2px solid var(--hue); outline-offset: 2px; border-radius: 4px; }
+  .num { font-variant-numeric: tabular-nums; }
+
+  /* Viewer bar: the only chrome on the report. 48px, 1px rule. */
+  .viewer {
+    height: 48px; display: flex; align-items: center; justify-content: space-between;
+    padding: 0 24px; border-bottom: 1px solid var(--border); background: var(--ground);
+    position: sticky; top: 0; z-index: 10;
+  }
+  .brand { display: flex; align-items: center; gap: 10px; font-size: 15px; font-weight: 600; letter-spacing: -0.01em; }
+  .brand svg { width: 22px; height: 22px; display: block; }
+  .viewer .ghost { visibility: hidden; }
+  .viewer.results .ghost { visibility: visible; }
+
+  .btn {
+    appearance: none; border: 1px solid var(--control); background: var(--surface);
+    color: var(--text); border-radius: var(--radius-control); height: 36px; padding: 0 16px;
+    font-weight: 500; cursor: pointer; transition: background-color 150ms ease, border-color 150ms ease;
+  }
+  .btn:hover { background: var(--raised); }
+  .btn.primary {
+    background: var(--accent); border-color: var(--accent); color: #fff;
+    height: 44px; padding: 0 32px; font-size: 15px; font-weight: 600;
+  }
+  .btn.primary:hover { background: #2b2b2b; border-color: #2b2b2b; }
+  .btn.primary:disabled { opacity: 0.55; cursor: wait; }
+  .btn.primary:disabled:hover { background: var(--accent); border-color: var(--accent); }
+
+  /* Centred 1088px column, 33px below the viewer bar. */
+  .col { max-width: 1088px; margin: 0 auto; padding: 33px 24px 64px; }
+  @media (max-width: 700px) { .col { padding: 24px 16px 48px; } }
+
+  .title-row { margin-bottom: 24px; }
+  .title-row h1 { font-size: 24px; line-height: 1.2; font-weight: 600; letter-spacing: -0.01em; }
+  .title-row .sub { margin-top: 4px; color: var(--muted); font-size: 14px; max-width: 62ch; }
+
+  /* Input state */
+  .fields { display: grid; grid-template-columns: 1fr 1fr; gap: var(--gap); margin-bottom: var(--gap); }
+  @media (max-width: 700px) { .fields { grid-template-columns: 1fr; } }
+  .field label { display: block; font-size: 14px; font-weight: 500; margin-bottom: 8px; }
+  .field textarea {
+    width: 100%; min-height: 260px; resize: vertical; background: var(--surface);
+    border: 1px solid var(--control); border-radius: var(--radius-control);
+    padding: 12px; font-size: 13.5px; line-height: 1.55;
+  }
+  .field textarea::placeholder { color: var(--muted); }
+  .actions { display: flex; align-items: center; gap: 16px; margin: 20px 0 8px; flex-wrap: wrap; }
+  .hint { color: var(--muted); font-size: 12px; }
+  .notice {
+    border-radius: var(--radius-card); padding: 12px 16px; font-size: 14px; margin-top: 16px;
+  }
+  .notice.error { background: var(--pill-negative-bg); border: 1px solid #f3c1bd; color: var(--pill-negative-ink); }
+  .notice .detail { display: block; margin-top: 4px; font-size: 12px; opacity: 0.85; }
+
+  /* Report grid: 12 columns, one 12px gutter. */
+  .grid { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: var(--gap); }
+  .panel {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius-card); padding: 20px; min-width: 0;
+  }
+  .panel h2 { font-size: 16px; font-weight: 600; line-height: 1.3; }
+  .panel .meta { color: var(--muted); font-size: 12px; margin-top: 4px; }
+  .span8 { grid-column: span 8; } .span4 { grid-column: span 4; }
+  .span7 { grid-column: span 7; } .span5 { grid-column: span 5; }
+  .span12 { grid-column: span 12; }
+  @media (max-width: 900px) {
+    .span8, .span4, .span7, .span5 { grid-column: span 12; }
+  }
+  .grid.top { align-items: start; }
+
+  /* The verdict: the score is the hero. One hue, on the dial only. */
+  .verdict .kpi-label { display: flex; align-items: center; gap: 10px; margin-bottom: 4px; }
+  .kpi-label .label { font-size: 14px; color: var(--muted); font-weight: 500; }
+  .verdict-body { display: flex; gap: 24px; align-items: stretch; margin-top: 8px; }
+  .dial-col { flex: none; display: flex; flex-direction: column; align-items: center; }
+  .dial-wrap { position: relative; width: 200px; height: 200px; }
+  .dial-wrap svg { display: block; width: 100%; height: 100%; }
+  .dial-num { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; }
+  .dial-num .v { font-size: 56px; line-height: 1; font-weight: 500; letter-spacing: -0.03em; }
+  .dial-num .unit { font-size: 16px; color: var(--muted); font-weight: 400; margin-left: 4px; }
+  /* Verdict as a stamp mark: straight, double-framed, ink per band. */
+  .stamp-mark {
+    display: inline-block; margin-top: 14px; padding: 7px 14px 6px;
+    font-size: 11px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase;
+    border: 2px solid currentColor; border-radius: 4px; position: relative; white-space: nowrap;
+  }
+  .stamp-mark::after {
+    content: ""; position: absolute; inset: 2px;
+    border: 1px solid currentColor; border-radius: 2px;
+  }
+  .stamp-mark.positive { color: #2e7d32; }
+  .stamp-mark.warning { color: #92400e; }
+  .stamp-mark.negative { color: #c4242a; }
+  .stamp-mark.neutral { color: #6b6b6b; }
+  /* Perforation between the dial stub and the ledger copy. */
+  .perf { flex: none; align-self: stretch; border-left: 2px dashed var(--border); margin: 0 2px; position: relative; }
+  .perf::before, .perf::after {
+    content: ""; position: absolute; left: 50%; width: 16px; height: 16px;
+    background: var(--ground); border-radius: 50%; transform: translate(-50%, -50%);
+  }
+  .perf::before { top: -21px; }
+  .perf::after { bottom: -21px; }
+  .verdict-copy { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+  .verdict-copy .expl { font-size: 15px; line-height: 1.55; margin-bottom: 16px; }
+  .stamp-line {
+    margin-top: auto; padding-top: 10px; border-top: 3px double var(--border);
+    font-size: 11px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted);
+  }
+  @media (max-width: 700px) {
+    .verdict-body { flex-direction: column; align-items: center; }
+    .dial-wrap { width: 168px; height: 168px; }
+    .dial-num .v { font-size: 48px; }
+    .perf { border-left: none; border-top: 2px dashed var(--border); width: 100%; margin: 2px 0; align-self: auto; }
+    .perf::before { top: 50%; left: -21px; }
+    .perf::after { top: 50%; bottom: auto; left: auto; right: -21px; }
+    .verdict-copy { width: 100%; }
+  }
+  .meter { height: 8px; background: var(--raised); border-radius: 999px; overflow: hidden; margin-top: 16px; }
+  .meter > div { height: 100%; border-radius: 999px; }
+
+  .match .figure { font-size: 30px; line-height: 1.1; font-weight: 500; letter-spacing: -0.02em; margin: 10px 0 2px; }
+  .match .figure .unit { font-size: 14px; color: var(--muted); font-weight: 400; margin-left: 2px; }
+  .match .sub { color: var(--muted); font-size: 13px; margin-top: 8px; }
+  .match .meter > div { background: var(--accent); }
+
+  /* Skill breakdown rows */
+  .cat { padding: 12px 0; border-bottom: 1px solid var(--rule); }
+  .cat:last-child { border-bottom: none; padding-bottom: 0; }
+  .cat-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+  .cat-head .name { font-weight: 500; }
+  .cat-head .score { font-weight: 500; white-space: nowrap; }
+  .cat-head .score.na { color: var(--muted); font-weight: 400; }
+  .strip { display: flex; gap: 3px; margin: 10px 0 8px; }
+  .strip i { flex: 1; height: 10px; border-radius: 2px; background: var(--raised); }
+  .strip i.on { background: var(--accent); }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chip {
+    font-size: 12px; line-height: 1; padding: 5px 10px; border-radius: 999px;
+    background: var(--pill-neutral-bg); color: var(--pill-neutral-ink); font-weight: 500;
+  }
+  .chip.missing { background: var(--pill-negative-bg); color: var(--pill-negative-ink); }
+
+  /* ATS checks ledger */
+  .check { padding: 10px 0; border-bottom: 1px solid var(--rule); }
+  .check:last-child { border-bottom: none; padding-bottom: 0; }
+  .check-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+  .check-head .name { font-weight: 500; }
+  .check-head .pts { white-space: nowrap; color: var(--muted); }
+  .check-head .pts b { color: var(--text); font-weight: 500; }
+  .fb { color: var(--muted); font-size: 12.5px; margin-top: 4px; padding-left: 14px; text-indent: -14px; }
+  .fb::before { content: "↳ "; }
+
+  /* Insights */
+  .tip { display: flex; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--rule); font-size: 14px; line-height: 1.55; }
+  .tip:last-child { border-bottom: none; padding-bottom: 0; }
+  .tip::before { content: ""; flex: none; width: 6px; height: 6px; background: var(--accent); margin-top: 7px; }
+
+  /* Loading skeleton */
+  .skel { border-radius: 6px; background: var(--raised); }
+  .loading-line { color: var(--muted); font-size: 14px; margin-bottom: 16px; }
+
+  footer { text-align: center; color: var(--muted); font-size: 12px; padding: 0 24px 32px; }
+  [hidden] { display: none !important; }
 </style>
 </head>
 <body>
-<div class="wrap">
-  <header>
-    <h1>ATS<span class="q">ight</span></h1>
-    <p>AI-powered resume ↔ job matching with ATS simulation</p>
-  </header>
 
-  <div class="grid">
-    <div class="card">
-      <h2>Your resume</h2>
-      <textarea id="resume" placeholder="Paste your resume text here…"></textarea>
-    </div>
-    <div class="card">
-      <h2>Job description</h2>
-      <textarea id="job" placeholder="Paste the job description here…"></textarea>
-    </div>
+<div class="viewer" id="viewer">
+  <div class="brand">
+    <svg viewBox="0 0 24 24" fill="none" stroke="#0a0a0a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M6 3h8l4 4v14H6z" />
+      <path d="M14 3v4h4" />
+      <path d="M9 13h6" />
+      <path d="M9 16.5h6" />
+      <path d="M9.5 12.2l1.4 1.4 2.6-3" stroke="#1d5fbf" />
+    </svg>
+    <span>ATSight</span>
   </div>
-  <div class="actions">
-    <button id="go" onclick="analyze()">Analyze match</button>
-  </div>
-  <div id="err" class="err"></div>
-
-  <div id="results">
-    <div class="score-hero">
-      <div class="card score-box">
-        <h2>Job match</h2>
-        <div class="score-num" id="matchScore">–</div>
-        <div class="bar"><div id="matchBar" style="width:0;background:var(--accent)"></div></div>
-      </div>
-      <div class="card score-box">
-        <h2>ATS score</h2>
-        <div class="score-num" id="atsScore">–</div>
-        <div class="bar"><div id="atsBar" style="width:0;background:var(--good)"></div></div>
-        <p class="expl" id="atsExplanation"></p>
-      </div>
-    </div>
-
-    <div class="card" style="margin-bottom:1rem">
-      <h2>Category breakdown</h2>
-      <div id="cats"></div>
-    </div>
-
-    <div class="grid">
-      <div class="card">
-        <h2>ATS checks</h2>
-        <div id="checks"></div>
-      </div>
-      <div class="card">
-        <h2>Insights</h2>
-        <ul class="tips" id="tips"></ul>
-      </div>
-    </div>
-  </div>
-
-  <footer>ATSight · weighted skill matching · explainable ATS scoring</footer>
+  <button class="btn ghost" id="againTop" type="button">Analyze another</button>
 </div>
 
+<main class="col">
+
+  <!-- Input state -->
+  <section id="inputView" aria-label="New resume check">
+    <div class="title-row">
+      <h1>Resume check</h1>
+      <p class="sub">Paste your resume and the job description. ATSight scores how the two match and audits your resume the way an applicant tracking system would.</p>
+    </div>
+    <div class="fields">
+      <div class="field">
+        <label for="resume">Resume</label>
+        <textarea id="resume" placeholder="Paste your resume text here" spellcheck="false"></textarea>
+      </div>
+      <div class="field">
+        <label for="job">Job description</label>
+        <textarea id="job" placeholder="Paste the job description here" spellcheck="false"></textarea>
+      </div>
+    </div>
+    <div class="actions">
+      <button class="btn primary" id="go" type="button">Analyze match</button>
+      <span class="hint">Runs locally in your browser session. Nothing is stored.</span>
+    </div>
+    <div id="err"></div>
+  </section>
+
+  <!-- Loading state -->
+  <section id="loadingView" hidden aria-label="Analyzing">
+    <div class="title-row">
+      <h1>Resume check</h1>
+      <p class="loading-line">Reading your resume and the job description…</p>
+    </div>
+    <div class="grid">
+      <div class="panel span8">
+        <div class="skel" style="height:14px;width:120px;margin-bottom:20px"></div>
+        <div style="display:flex;gap:24px;align-items:center">
+          <div class="skel" style="height:180px;width:180px;border-radius:50%;flex:none"></div>
+          <div style="flex:1;min-width:0">
+            <div class="skel" style="height:14px;width:95%;margin-bottom:8px"></div>
+            <div class="skel" style="height:14px;width:75%;margin-bottom:8px"></div>
+            <div class="skel" style="height:14px;width:45%"></div>
+          </div>
+        </div>
+      </div>
+      <div class="panel span4">
+        <div class="skel" style="height:14px;width:100px;margin-bottom:16px"></div>
+        <div class="skel" style="height:34px;width:120px;margin-bottom:12px"></div>
+        <div class="skel" style="height:8px;width:100%"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Results report -->
+  <section id="resultsView" hidden aria-label="Results">
+    <div class="title-row">
+      <h1>Resume check</h1>
+    </div>
+    <div class="grid top">
+      <div class="panel verdict span8">
+        <div class="kpi-label">
+          <span class="label">ATS score</span>
+        </div>
+        <div class="verdict-body">
+          <div class="dial-col">
+            <div class="dial-wrap" role="img" id="atsDialWrap" aria-label="ATS score">
+              <svg viewBox="0 0 200 200" aria-hidden="true">
+                <circle cx="100" cy="100" r="93" fill="none" stroke-width="14" style="stroke:var(--raised)" />
+                <circle id="atsRing" cx="100" cy="100" r="93" fill="none" stroke-width="14"
+                  stroke-linecap="round" transform="rotate(-90 100 100)"
+                  stroke-dasharray="584.3" stroke-dashoffset="584.3" style="stroke:var(--hue)" />
+              </svg>
+              <div class="dial-num num"><span class="v" id="atsScore"></span><span class="unit">/100</span></div>
+            </div>
+            <div class="stamp-mark" id="verdictStamp"></div>
+          </div>
+          <div class="perf" aria-hidden="true"></div>
+          <div class="verdict-copy">
+            <p class="expl" id="atsExplanation"></p>
+            <p class="stamp-line num" id="stamp"></p>
+          </div>
+        </div>
+      </div>
+      <div class="panel match span4">
+        <div class="kpi-label"><span class="label">Job match</span></div>
+        <div class="figure num"><span id="matchScore"></span><span class="unit">/100</span></div>
+        <p class="sub num" id="matchSub"></p>
+        <div class="meter"><div id="matchBar"></div></div>
+      </div>
+      <div class="panel span7">
+        <h2>Skill breakdown</h2>
+        <p class="meta">How the job's skill categories scored. Neutral chips were found in your resume. Red chips are missing.</p>
+        <div id="cats" style="margin-top:8px"></div>
+      </div>
+      <div class="panel span5">
+        <h2>ATS checks</h2>
+        <p class="meta">Each check is worth points. The feedback says how to earn them back.</p>
+        <div id="checks" style="margin-top:8px"></div>
+      </div>
+      <div class="panel span12">
+        <h2>What to fix first</h2>
+        <p class="meta">In the order that moves your score most.</p>
+        <div id="tips" style="margin-top:8px"></div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>ATSight · weighted skill matching · explainable ATS scoring</footer>
+
 <script>
-function colorFor(v) {
-  return v >= 70 ? "var(--good)" : v >= 40 ? "var(--warn)" : "var(--bad)";
+"use strict";
+/* Surya's standing style rule: no em dashes in UI copy. The backend's
+   explanation strings contain em dashes, so they are normalized here at
+   render time. The API contract itself is untouched. */
+function clean(s) {
+  return String(s).replace(/ — /g, ", ").replace(/—/g, ",").replace(/–/g, "-");
 }
+function bandFor(v) {
+  if (v >= 85) return ["Excellent", "positive"];
+  if (v >= 70) return ["Strong", "positive"];
+  if (v >= 40) return ["Needs work", "warning"];
+  if (v > 0) return ["Weak", "negative"];
+  return ["Unscannable", "neutral"];
+}
+function show(id, on) { document.getElementById(id).hidden = !on; }
+function setView(name) {
+  ["inputView", "loadingView", "resultsView"].forEach(function (id) {
+    show(id, id === name + "View");
+  });
+  document.getElementById("viewer").classList.toggle("results", name === "results");
+  if (name === "input") document.getElementById("err").innerHTML = "";
+  window.scrollTo(0, 0);
+}
+
 async function analyze() {
-  const resume = document.getElementById("resume").value.trim();
-  const job = document.getElementById("job").value.trim();
-  const err = document.getElementById("err");
-  err.textContent = "";
-  if (!resume || !job) { err.textContent = "Please paste both your resume and a job description."; return; }
-  const btn = document.getElementById("go");
-  btn.disabled = true; btn.textContent = "Analyzing…";
+  var resume = document.getElementById("resume").value.trim();
+  var job = document.getElementById("job").value.trim();
+  var err = document.getElementById("err");
+  err.innerHTML = "";
+  if (!resume || !job) {
+    err.innerHTML = '<div class="notice error" role="alert">Paste both your resume and a job description to run the check.</div>';
+    return;
+  }
+  var btn = document.getElementById("go");
+  btn.disabled = true;
+  btn.textContent = "Analyzing…";
+  setView("loading");
   try {
-    const r = await fetch("/api/analyze", {
+    var r = await fetch("/api/analyze", {
       method: "POST",
-      headers: {"Content-Type": "application/json"},
-      body: JSON.stringify({resume_text: resume, job_text: job})
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ resume_text: resume, job_text: job })
     });
     if (!r.ok) throw new Error("Server returned " + r.status);
-    const d = await r.json();
-    render(d);
+    render(await r.json());
+    setView("results");
   } catch (e) {
-    err.textContent = "Analysis failed: " + e.message;
+    setView("input");
+    err.innerHTML = '<div class="notice error" role="alert">The analysis failed. Check your connection and try again.' +
+      '<span class="detail">' + clean(e.message) + '</span></div>';
   } finally {
-    btn.disabled = false; btn.textContent = "Analyze match";
+    btn.disabled = false;
+    btn.textContent = "Analyze match";
   }
 }
-function render(d) {
-  document.getElementById("results").style.display = "block";
-  const m = d.match, a = d.ats;
-  const ms = document.getElementById("matchScore");
-  ms.textContent = m.overall_score + "%";
-  ms.style.color = colorFor(m.overall_score);
-  document.getElementById("matchBar").style.width = m.overall_score + "%";
-  document.getElementById("matchBar").style.background = colorFor(m.overall_score);
-  const as = document.getElementById("atsScore");
-  as.textContent = a.total + "%";
-  as.style.color = colorFor(a.total);
-  document.getElementById("atsBar").style.width = a.total + "%";
-  document.getElementById("atsBar").style.background = colorFor(a.total);
-  document.getElementById("atsExplanation").textContent = a.explanation || "";
 
-  document.getElementById("cats").innerHTML = m.categories.map(c => {
-    if (c.score === null) return `<div class="cat"><div class="cat-head"><span>${c.category}</span><span style="color:var(--muted)">n/a</span></div></div>`;
-    const chips = c.matched_skills.map(s => `<span class="chip hit">${s}</span>`).join("")
-                + c.missing_skills.map(s => `<span class="chip">${s} ✕</span>`).join("");
-    return `<div class="cat">
-      <div class="cat-head"><span>${c.category}</span><span>${c.score}%</span></div>
-      <div class="bar"><div style="width:${c.score}%;background:${colorFor(c.score)}"></div></div>
-      <div class="chips">${chips}</div></div>`;
+function render(d) {
+  var m = d.match, a = d.ats;
+
+  /* Verdict hero: the dial. Ring fill is the true score ratio, flat and crisp. */
+  var band = bandFor(a.total);
+  var stampEl = document.getElementById("verdictStamp");
+  stampEl.textContent = band[0];
+  stampEl.className = "stamp-mark " + band[1];
+  document.getElementById("atsScore").textContent = a.total;
+  document.getElementById("atsExplanation").textContent = clean(a.explanation || "");
+  var C = 2 * Math.PI * 93;
+  var ring = document.getElementById("atsRing");
+  var clamped = Math.max(0, Math.min(100, a.total));
+  var target = C * (1 - clamped / 100);
+  document.getElementById("atsDialWrap").setAttribute("aria-label", "ATS score " + a.total + " out of 100");
+  ring.style.transition = "none";
+  ring.style.strokeDashoffset = C;
+  void ring.getBoundingClientRect();
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    ring.style.strokeDashoffset = target;
+  } else {
+    requestAnimationFrame(function () {
+      ring.style.transition = "stroke-dashoffset 700ms cubic-bezier(0.22, 1, 0.36, 1)";
+      ring.style.strokeDashoffset = target;
+    });
+  }
+
+  /* Job match */
+  document.getElementById("matchScore").textContent = m.overall_score;
+  document.getElementById("matchBar").style.width = m.overall_score + "%";
+  var sub = document.getElementById("matchSub");
+  if (m.total_job_skills > 0) {
+    sub.textContent = m.total_matched + " of " + m.total_job_skills + " skills from the job found in your resume";
+  } else {
+    sub.textContent = "No clear skill keywords found in the job description";
+  }
+
+  /* Skill breakdown */
+  document.getElementById("cats").innerHTML = m.categories.map(function (c) {
+    if (c.score === null || c.score === undefined) {
+      return '<div class="cat"><div class="cat-head"><span class="name">' + clean(c.category) +
+        '</span><span class="score na num">n/a</span></div></div>';
+    }
+    var chips = c.matched_skills.map(function (s) {
+      return '<span class="chip">' + clean(s) + "</span>";
+    }).join("") + c.missing_skills.map(function (s) {
+      return '<span class="chip missing">' + clean(s) + "</span>";
+    }).join("");
+    var total = c.matched_skills.length + c.missing_skills.length;
+    var segs = "";
+    var filled = Math.round(c.score / 10);
+    for (var i = 0; i < 10; i++) segs += '<i class="' + (i < filled ? "on" : "") + '"></i>';
+    return '<div class="cat"><div class="cat-head"><span class="name">' + clean(c.category) +
+      '</span><span class="score num">' + c.matched_skills.length + " of " + total + " · " + c.score + "%</span></div>" +
+      '<div class="strip" role="img" aria-label="' + clean(c.category) + " " + c.score + ' percent">' + segs + "</div>" +
+      (chips ? '<div class="chips">' + chips + "</div>" : "") + "</div>";
   }).join("");
 
-  document.getElementById("checks").innerHTML = a.checks.map(c =>
-    `<div class="check"><span>${c.name}</span><b>${c.points}/${c.max_points}</b></div>` +
-    c.feedback.map(f => `<div class="fb">↳ ${f}</div>`).join("")
-  ).join("");
+  /* ATS checks ledger */
+  document.getElementById("checks").innerHTML = a.checks.map(function (c) {
+    var fb = c.feedback.map(function (f) {
+      return '<div class="fb">' + clean(f) + "</div>";
+    }).join("");
+    return '<div class="check"><div class="check-head"><span class="name">' + clean(c.name) +
+      '</span><span class="pts num"><b>' + c.points + "</b>/" + c.max_points + "</span></div>" + fb + "</div>";
+  }).join("");
 
-  document.getElementById("tips").innerHTML =
-    d.insights.map(t => `<li>${t}</li>`).join("");
-  document.getElementById("results").scrollIntoView({behavior: "smooth"});
+  /* Insights */
+  document.getElementById("tips").innerHTML = d.insights.map(function (t) {
+    return '<div class="tip">' + clean(t) + "</div>";
+  }).join("");
+
+  /* Freshness stamp: the analysis just ran, on this machine's clock. */
+  var now = new Date();
+  document.getElementById("stamp").textContent = "Checked " +
+    now.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }) +
+    " · " + a.checks.length + " checks";
 }
+
+document.getElementById("go").addEventListener("click", analyze);
+document.getElementById("againTop").addEventListener("click", function () { setView("input"); });
 </script>
 </body>
 </html>
