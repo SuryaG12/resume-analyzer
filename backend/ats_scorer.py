@@ -35,8 +35,67 @@ class ATSScore:
     def to_dict(self) -> dict:
         return {
             "total": round(self.total, 1),
+            "explanation": explain_ats_score(self),
             "checks": [c.to_dict() for c in self.checks],
         }
+
+
+def explain_ats_score(result: ATSScore) -> str:
+    """Plain-English explanation of what drove an ATS score.
+
+    Built entirely from the check results, so the words always match
+    the number: the verdict band comes from the total, the strengths
+    from full-marks checks, and the drags from the checks with the
+    most missed points (with their own actionable feedback as the fix).
+    """
+    total = round(result.total, 1)
+    if total == 0:
+        return (
+            "There's no score here yet — the resume text looks empty or "
+            "unscannable. Paste your full resume text to get a score and a "
+            "breakdown of what's helping or hurting it."
+        )
+    if total >= 85:
+        verdict = (f"Scores {total:g}/100 — excellent. "
+                   "This resume should sail through most ATS parsers.")
+    elif total >= 70:
+        verdict = (f"Scores {total:g}/100 — strong and largely ATS-friendly, "
+                   "with a few fixable gaps.")
+    elif total >= 40:
+        verdict = (f"Scores {total:g}/100 — needs work. "
+                   "Several fixable issues are dragging it down.")
+    else:
+        verdict = (f"Scores {total:g}/100 — weak. "
+                   "An ATS parser would likely filter this out before a human sees it.")
+
+    full_marks = [c for c in result.checks if c.max_points and c.points >= c.max_points]
+    gaps = sorted(
+        (c for c in result.checks if c.max_points and c.points < c.max_points),
+        key=lambda c: (c.max_points - c.points),
+        reverse=True,
+    )
+    parts = [verdict]
+    if full_marks:
+        names = " and ".join(c.name.lower() for c in full_marks[:2])
+        parts.append(f"It's carried by {names} — full marks there.")
+    if gaps:
+        top = gaps[0]
+        fix = top.feedback[0] if top.feedback else "give this section another pass."
+        if len(gaps) > 1 and gaps[1].feedback:
+            second = gaps[1]
+            parts.append(
+                f"The biggest drag is {top.name.lower()} "
+                f"({top.points:g}/{top.max_points:g} points): {fix} "
+                f"Next: {second.name.lower()} — {second.feedback[0]}"
+            )
+        else:
+            parts.append(
+                f"The biggest drag is {top.name.lower()} "
+                f"({top.points:g}/{top.max_points:g} points): {fix}"
+            )
+    else:
+        parts.append("Nothing major is holding it back.")
+    return " ".join(parts)
 
 
 EMAIL_RE = re.compile(r"[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+")

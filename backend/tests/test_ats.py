@@ -52,3 +52,17 @@ def test_feedback_is_actionable():
 
 def test_score_bounded():
     assert 0 <= score_ats(STRONG_RESUME).total <= 100
+
+
+def test_explanation_covers_every_score():
+    strong = score_ats(STRONG_RESUME).to_dict()
+    assert strong["explanation"], "explanation must be non-empty"
+    assert str(int(strong["total"])) in strong["explanation"]
+    assert "carried by" in strong["explanation"]
+
+    weak = score_ats(WEAK_RESUME).to_dict()["explanation"]
+    assert len(weak) > 40
+    assert "drag" in weak  # names what's holding the score back
+
+    empty = score_ats("").to_dict()["explanation"]
+    assert "empty" in empty or "unscannable" in empty

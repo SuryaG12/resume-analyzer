@@ -54,6 +54,7 @@
            border-bottom: 1px solid #2a3550; font-size: .9rem; }
   .check:last-child { border-bottom: none; }
   .fb { color: var(--muted); font-size: .82rem; margin: .15rem 0 .4rem; }
+  .expl { color: var(--muted); font-size: .92rem; line-height: 1.55; margin: .6rem 0 0; }
   .err { color: var(--bad); text-align: center; margin: 1rem 0; }
   footer { text-align: center; color: var(--muted); font-size: .8rem; margin-top: 3rem; }
 </style>
@@ -91,6 +92,7 @@
         <h2>ATS score</h2>
         <div class="score-num" id="atsScore">–</div>
         <div class="bar"><div id="atsBar" style="width:0;background:var(--good)"></div></div>
+        <p class="expl" id="atsExplanation"></p>
       </div>
     </div>
 
@@ -154,6 +156,7 @@ function render(d) {
   as.style.color = colorFor(a.total);
   document.getElementById("atsBar").style.width = a.total + "%";
   document.getElementById("atsBar").style.background = colorFor(a.total);
+  document.getElementById("atsExplanation").textContent = a.explanation || "";
 
   document.getElementById("cats").innerHTML = m.categories.map(c => {
     if (c.score === null) return `<div class="cat"><div class="cat-head"><span>${c.category}</span><span style="color:var(--muted)">n/a</span></div></div>`;
