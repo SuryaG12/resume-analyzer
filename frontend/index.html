@@ -4,6 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>ATSight: resume check</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231d5fbf' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 3h8l4 4v14H6z'/%3E%3Cpath d='M14 3v4h4'/%3E%3Cpath d='M9.5 12.2l1.4 1.4 2.6-3'/%3E%3C/svg%3E" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet" />
@@ -27,8 +28,11 @@
     --pill-negative-bg: #ffedea; --pill-negative-ink: #831c1e;
     --pill-warning-bg: #fffbeb; --pill-warning-ink: #92400e;
     --pill-neutral-bg: #eeeeee; --pill-neutral-ink: #3d3d3d;
-    --radius-card: 8px;
-    --radius-control: 6px;
+    --radius-card: 10px;
+    --radius-control: 8px;
+    --ring: var(--hue);
+    --shadow-card: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --shadow-control: 0 1px 2px 0 rgb(0 0 0 / 0.06);
     --gap: 12px;
     --font: "Geist", Inter, system-ui, -apple-system, "Segoe UI", sans-serif;
     /* Motion tokens (emilkowalski): strong custom curves, never built-in easings for deliberate motion. */
@@ -45,7 +49,8 @@
   h1, h2, h3, p, ul { margin: 0; }
   ul { padding: 0; list-style: none; }
   button, textarea { font: inherit; color: inherit; }
-  :focus-visible { outline: 2px solid var(--hue); outline-offset: 2px; border-radius: 4px; }
+  /* Focus ring (shadcn): 2px ring in the accent hue, follows the element's own radius. */
+  :focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
   .num { font-variant-numeric: tabular-nums; }
 
   /* Viewer bar: the only chrome on the report. 48px, 1px rule. */
@@ -73,10 +78,21 @@
   .btn.primary {
     background: var(--accent); border-color: var(--accent); color: #fff;
     height: 44px; padding: 0 32px; font-size: 15px; font-weight: 600;
+    box-shadow: var(--shadow-control);
   }
   .btn.primary:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
-  .btn.primary:disabled { opacity: 0.55; cursor: wait; }
+  .btn.primary:disabled { opacity: 0.55; cursor: wait; box-shadow: none; }
   .btn.primary:disabled:hover { background: var(--accent); border-color: var(--accent); }
+  /* Outline button (shadcn outline): bordered, quiet until hovered. */
+  .btn.outline {
+    background: var(--surface); border-color: var(--control); color: var(--text);
+    height: 44px; padding: 0 20px; font-size: 14px; font-weight: 500;
+    box-shadow: var(--shadow-control);
+  }
+  .btn.outline:hover { background: var(--raised); border-color: var(--muted); }
+  /* Ghost button (shadcn ghost): borderless until hovered. */
+  .btn.ghost { background: transparent; border-color: transparent; height: 36px; }
+  .btn.ghost:hover { background: var(--raised); }
 
   /* Centred 1088px column, 33px below the viewer bar. */
   .col { max-width: 1088px; margin: 0 auto; padding: 33px 24px 64px; }
@@ -85,17 +101,40 @@
   .title-row { margin-bottom: 24px; }
   .title-row h1 { font-size: 24px; line-height: 1.2; font-weight: 600; letter-spacing: -0.01em; }
   .title-row .sub { margin-top: 4px; color: var(--muted); font-size: 14px; max-width: 62ch; }
+  /* Brand hero: the product introduces itself on the input screen. */
+  .brand-hero { margin-bottom: 28px; }
+  .brand-hero .hero-mark { display: flex; align-items: center; gap: 12px; }
+  .brand-hero .hero-mark svg { width: 38px; height: 38px; color: var(--ink); flex: none; }
+  .brand-hero .wordmark { font-size: 36px; font-weight: 700; letter-spacing: -0.02em; line-height: 1.1; }
+  .brand-hero .tagline { margin-top: 6px; font-size: 15px; color: var(--text); font-weight: 500; }
+  .brand-hero .sub { margin-top: 6px; }
 
   /* Input state */
   .fields { display: grid; grid-template-columns: 1fr 1fr; gap: var(--gap); margin-bottom: var(--gap); }
   @media (max-width: 700px) { .fields { grid-template-columns: 1fr; } }
-  .field label { display: block; font-size: 14px; font-weight: 500; margin-bottom: 8px; }
+  /* Input fields as cards (shadcn form field): label row with live word count,
+     textarea with ring focus, helper hint. */
+  .field {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius-card); box-shadow: var(--shadow-card);
+    padding: 16px; display: flex; flex-direction: column; min-width: 0;
+  }
+  .field-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; margin-bottom: 8px; }
+  .field label { font-size: 14px; font-weight: 600; letter-spacing: -0.01em; }
+  .field .wordcount { font-size: 12px; color: var(--muted); white-space: nowrap; }
   .field textarea {
-    width: 100%; min-height: 260px; resize: vertical; background: var(--surface);
+    width: 100%; min-height: 220px; resize: vertical; background: var(--surface);
     border: 1px solid var(--control); border-radius: var(--radius-control);
     padding: 12px; font-size: 13.5px; line-height: 1.55;
+    transition: border-color 150ms ease, box-shadow 150ms ease;
+  }
+  .field textarea:hover { border-color: var(--muted); }
+  .field textarea:focus-visible {
+    outline: none; border-color: var(--hue);
+    box-shadow: 0 0 0 3px rgb(29 95 191 / 0.12);
   }
   .field textarea::placeholder { color: var(--muted); }
+  .field .field-hint { font-size: 12px; color: var(--muted); margin-top: 8px; }
   .actions { display: flex; align-items: center; gap: 16px; margin: 20px 0 8px; flex-wrap: wrap; }
   .hint { color: var(--muted); font-size: 12px; }
   .notice {
@@ -109,8 +148,9 @@
   .panel {
     background: var(--surface); border: 1px solid var(--border);
     border-radius: var(--radius-card); padding: 20px; min-width: 0;
+    box-shadow: var(--shadow-card);
   }
-  .panel h2 { font-size: 16px; font-weight: 600; line-height: 1.3; }
+  .panel h2 { font-size: 17px; font-weight: 600; line-height: 1.3; letter-spacing: -0.01em; }
   .panel .meta { color: var(--muted); font-size: 12px; margin-top: 4px; }
   .span8 { grid-column: span 8; } .span4 { grid-column: span 4; }
   .span7 { grid-column: span 7; } .span5 { grid-column: span 5; }
@@ -190,9 +230,10 @@
   .chips { display: flex; flex-wrap: wrap; gap: 6px; }
   .chip {
     font-size: 12px; line-height: 1; padding: 5px 10px; border-radius: 999px;
-    background: var(--pill-neutral-bg); color: var(--pill-neutral-ink); font-weight: 500;
+    background: var(--pill-neutral-bg); color: var(--pill-neutral-ink); font-weight: 600;
+    border: 1px solid var(--border);
   }
-  .chip.missing { background: var(--pill-negative-bg); color: var(--pill-negative-ink); }
+  .chip.missing { background: var(--pill-negative-bg); color: var(--pill-negative-ink); border-color: #f3c1bd; }
 
   /* ATS checks ledger */
   .check { padding: 10px 0; border-bottom: 1px solid var(--rule); }
@@ -263,22 +304,40 @@
 
   <!-- Input state -->
   <section id="inputView" aria-label="New resume check">
-    <div class="title-row">
-      <h1>Resume check</h1>
+    <div class="title-row brand-hero">
+      <div class="hero-mark">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M6 3h8l4 4v14H6z" />
+          <path d="M14 3v4h4" />
+          <path d="M9 13h6" />
+          <path d="M9 16.5h6" />
+          <path d="M9.5 12.2l1.4 1.4 2.6-3" style="stroke:var(--hue)" />
+        </svg>
+        <span class="wordmark">ATSight</span>
+      </div>
+      <p class="tagline">AI-powered resume-to-job matching with ATS simulation</p>
       <p class="sub">Paste your resume and the job description. ATSight scores how the two match and audits your resume the way an applicant tracking system would.</p>
     </div>
     <div class="fields">
       <div class="field">
-        <label for="resume">Resume</label>
-        <textarea id="resume" placeholder="Paste your resume text here" spellcheck="false"></textarea>
+        <div class="field-head">
+          <label for="resume">Resume</label>
+          <span class="wordcount num" id="resumeCount">0 words</span>
+        </div>
+        <textarea id="resume" placeholder="Paste your resume text here" spellcheck="false" aria-describedby="resumeHint"></textarea>
+        <p class="field-hint" id="resumeHint">Aim for 300+ words. Longer resumes parse more reliably.</p>
       </div>
       <div class="field">
-        <label for="job">Job description</label>
+        <div class="field-head">
+          <label for="job">Job description</label>
+          <span class="wordcount num" id="jobCount">0 words</span>
+        </div>
         <textarea id="job" placeholder="Paste the job description here" spellcheck="false"></textarea>
       </div>
     </div>
     <div class="actions">
       <button class="btn primary" id="go" type="button">Analyze match</button>
+      <button class="btn outline" id="sample" type="button">Fill in a sample</button>
       <span class="hint">Runs on this machine. Nothing is stored.</span>
     </div>
     <div id="err"></div>
@@ -519,6 +578,78 @@ function render(d) {
 
 document.getElementById("go").addEventListener("click", analyze);
 document.getElementById("againTop").addEventListener("click", function () { setView("input"); });
+
+/* Live word counts under each field (shadcn form description pattern). */
+function wordCount(s) {
+  var w = String(s).trim().split(/\s+/).filter(Boolean);
+  return w.length;
+}
+function updateCounts() {
+  var r = wordCount(document.getElementById("resume").value);
+  var j = wordCount(document.getElementById("job").value);
+  document.getElementById("resumeCount").textContent = r + (r === 1 ? " word" : " words");
+  document.getElementById("jobCount").textContent = j + (j === 1 ? " word" : " words");
+}
+document.getElementById("resume").addEventListener("input", updateCounts);
+document.getElementById("job").addEventListener("input", updateCounts);
+
+/* One-click sample data, for first-run and demo purposes. */
+var SAMPLE_RESUME = [
+  "Arjun Mehta",
+  "Bellevue, WA \u00B7 arjun.mehta@example.com \u00B7 linkedin.com/in/arjunmehta \u00B7 github.com/arjunmehta",
+  "",
+  "EDUCATION",
+  "Bellevue High School, Bellevue, WA, Expected June 2027",
+  "Relevant coursework: AP Computer Science (5), Data Structures, Web Development",
+  "",
+  "EXPERIENCE",
+  "Web Development Intern, Youth Charity Group, Jun 2025 to Present",
+  "- Built and maintained donation pages serving 200+ monthly visitors",
+  "- Shipped 12 website updates using HTML, CSS, and JavaScript",
+  "- Worked with a team of 5 volunteers to redesign the homepage",
+  "",
+  "PROJECTS",
+  "ATSight, AI Resume and Job Matcher, Oct 2026",
+  "- Built a full-stack Python and FastAPI app that scores resumes against job posts",
+  "- Implemented an ATS simulation engine with 7 weighted checks",
+  "- Added plain-English explanations for every score",
+  "",
+  "VEX Robotics, Team Captain, 2023 to 2026",
+  "- Led an 18-person robotics team to the state championship",
+  "- Managed the engineering notebook and build schedule",
+  "",
+  "SKILLS",
+  "Programming: Python, JavaScript",
+  "Frameworks: FastAPI, React",
+  "Cloud and DevOps: AWS, Docker",
+  "Databases: PostgreSQL",
+  "Tools: GitHub"
+].join("\n");
+var SAMPLE_JOB = [
+  "Software Engineering Intern, Summer 2027",
+  "TechCorp, Bellevue, WA",
+  "",
+  "Responsibilities:",
+  "- Build backend services in Python and Go",
+  "- Work with FastAPI and Django",
+  "- Deploy with Docker and Kubernetes on AWS",
+  "- Set up CI/CD pipelines with GitHub Actions",
+  "- Write efficient PostgreSQL queries",
+  "",
+  "Requirements:",
+  "- Experience with Python; Go is a plus",
+  "- Familiarity with FastAPI or Django",
+  "- Knowledge of AWS, Docker, CI/CD, Kubernetes",
+  "- Experience with PostgreSQL and GitHub workflows",
+  "- Interest in Machine Learning and TensorFlow a plus",
+  "- Strong leadership and mentoring skills"
+].join("\n");
+document.getElementById("sample").addEventListener("click", function () {
+  document.getElementById("resume").value = SAMPLE_RESUME;
+  document.getElementById("job").value = SAMPLE_JOB;
+  updateCounts();
+  document.getElementById("resume").focus();
+});
 </script>
 </body>
 </html>
