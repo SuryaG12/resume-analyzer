@@ -58,8 +58,8 @@ API docs: `http://localhost:8000/docs`
 For Claude-enhanced insights:
 
 ```bash
-export ANTHROPIC_API_KEY=sk-ant-...   # macOS/Linux
-# set ANTHROPIC_API_KEY=sk-ant-...    # Windows
+export ANTHROPIC_API_KEY=<your-anthropic-key>   # macOS/Linux
+# set ANTHROPIC_API_KEY=<your-anthropic-key>    # Windows
 
 python app.py
 ```
